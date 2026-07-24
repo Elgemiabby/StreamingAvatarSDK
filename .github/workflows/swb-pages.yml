@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - main
-      - swb-prototype-live
+    paths:
+      - 'swb-site/**'
+      - '.github/workflows/swb-pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,10 +25,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout platform branch
+      - name: Checkout main
         uses: actions/checkout@v4
-        with:
-          ref: swb-prototype-live
+      - name: Validate site files
+        run: |
+          test -f swb-site/index.html
+          test -f swb-site/app.js
+          test -f swb-site/styles.css
+          node --check swb-site/app.js
+          node --check swb-site/data.js
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
@@ -34,7 +41,7 @@ jobs:
       - name: Upload platform
         uses: actions/upload-pages-artifact@v3
         with:
-          path: swb-live
+          path: swb-site
       - name: Deploy platform
         id: deployment
         uses: actions/deploy-pages@v4
