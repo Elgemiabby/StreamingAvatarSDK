@@ -1,8 +1,9 @@
-name: Deploy SWB Prototype
+name: Deploy SWB Platform
 
 on:
   push:
     branches:
+      - main
       - swb-prototype-live
   workflow_dispatch:
 
@@ -12,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: swb-pages
   cancel-in-progress: true
 
 jobs:
@@ -22,18 +23,18 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout prototype branch
+      - name: Checkout platform branch
         uses: actions/checkout@v4
         with:
           ref: swb-prototype-live
-      - name: Configure Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Upload site
+      - name: Upload platform
         uses: actions/upload-pages-artifact@v3
         with:
           path: swb-live
-      - name: Deploy
+      - name: Deploy platform
         id: deployment
         uses: actions/deploy-pages@v4
