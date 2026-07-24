@@ -1,4 +1,4 @@
-name: Deploy SWB Prototype
+name: Deploy SWB Platform
 
 on:
   push:
@@ -12,11 +12,11 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: swb-pages
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  validate-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -24,14 +24,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure Pages
+      - name: Rebuild platform bundle
+        run: |
+          rm -rf _site
+          mkdir -p _site
+          base64 --decode swb-v2.tar.gz.b64 > /tmp/swb-v2.tar.gz
+          tar -xzf /tmp/swb-v2.tar.gz -C _site
+      - name: Validate required files
+        run: |
+          test -s _site/index.html
+          test -s _site/styles.css
+          test -s _site/app.js
+          test -s _site/data.js
+          node --check _site/app.js
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: swb-live
+          path: _site
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
